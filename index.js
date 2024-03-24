@@ -8,7 +8,7 @@ const { URL } = require('url');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Store URLs in memory (could also use Redis or other key-value stores for persistence)
+// Storing URLs in memory for using shorturl
 const urlDatabase = {};
 
 app.use(cors());
@@ -19,11 +19,11 @@ app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Middleware to validate URL format
+// Validate the URL format
 function validateUrl(req, res, next) {
-  let { url } = req.body; // Adjusted to look for "url" instead of "original_url"
+  let { url } = req.body; 
 
-  // Check if url is provided and not empty
+  // If url is empty, using default as per index.html
   if (!url || url.trim() === '') {
     url = 'https://www.freecodecamp.org/';
   }
@@ -45,23 +45,21 @@ function validateUrl(req, res, next) {
   }
 }
 
-// Endpoint to create short URL
+// Creating short URL
 app.post('/api/shorturl', validateUrl, function(req, res) {
   let { url } = req.body;
   const short_url = shortid.generate();
 
-  // Check if url is provided and not empty
   if (!url || url.trim() === '') {
     url = 'https://www.freecodecamp.org/';
   }
 
-  // Store original_url and corresponding short_url in database
   urlDatabase[short_url] = url;
 
   res.json({ original_url: url, short_url: short_url });
 });
 
-// Endpoint to redirect to original URL
+// Check for redirecting to original url using shorturl
 app.get('/api/shorturl/:short_url', function(req, res) {
   const { short_url } = req.params;
 
